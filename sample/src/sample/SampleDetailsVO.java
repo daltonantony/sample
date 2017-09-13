@@ -81,7 +81,7 @@ public class SampleDetailsVO {
 	@Override
 	public String toString() {
 		return "[Id = " + id + "] [Type = " + type + "] [Name = " + name + "] [Mode = " + mode + "] [Payment Date = "
-				+ paymentDate + "] [Due Date = " + dueDate + "] [Amount = " + amount + "]";
+				+ paymentDate + "] [Due Date = " + dueDate + "] [Amount = " + amount + "] [Fine = " + fine + "]";
 	}
 
 }

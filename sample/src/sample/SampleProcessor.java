@@ -82,6 +82,9 @@ public class SampleProcessor {
 			}
 		}
 
+		// in case not even a single instance of duplicate items should be added in unique list
+		doAdditionalFiltering(duplicateIdItems, uniqueIdItems);
+
 		voList.removeAll(duplicateIdItems);
 		final List<SampleDetailsVO> listOfABItems = new ArrayList<SampleDetailsVO>();
 		final List<SampleDetailsVO> listOfCDItems = new ArrayList<SampleDetailsVO>();
@@ -98,6 +101,20 @@ public class SampleProcessor {
 		mapOfDetails.put("CD", listOfCDItems);
 		mapOfDetails.put("XY", duplicateIdItems);
 		return mapOfDetails;
+	}
+
+	private void doAdditionalFiltering(final Set<SampleDetailsVO> duplicateIdItems,
+			final Set<SampleDetailsVO> uniqueIdItems) {
+		final Set<SampleDetailsVO> additionalDuplicateItems = new HashSet<SampleDetailsVO>();
+		for (final SampleDetailsVO dupVO : duplicateIdItems) {
+			for (final SampleDetailsVO uniVO : uniqueIdItems) {
+				if (uniVO.getId().equals(dupVO.getId())) {
+					additionalDuplicateItems.add(uniVO);
+				}
+			}
+		}
+		uniqueIdItems.removeAll(additionalDuplicateItems);
+		duplicateIdItems.addAll(additionalDuplicateItems);
 	}
 
 	private List<String> getFileContents(final String fileLocation) {

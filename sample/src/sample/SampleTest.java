@@ -8,7 +8,7 @@ public class SampleTest {
 	public static void main(final String[] args) {
 		final SampleProcessor processor = new SampleProcessor();
 		// Give your local path here:
-		final String fileLocation = "C:\\DATA\\eclipse\\forecast_workspace\\sample\\src\\sample\\sample_file.txt";
+		final String fileLocation = "C:\\DATA\\sample\\sample\\src\\sample\\sample_file.txt";
 		final Map<String, Collection<?>> processedDetails = processor
 				.processDetails(fileLocation);
 		System.out.println("OUPUT:");
