@@ -1,29 +1,5 @@
 package sample;
 
-/**************************************************************************************************/
-/*
- *
- * DO NOT ADD PACKAGE DECLARATION PLEASE NOTE: THIS SKELETON FILE MUST BE PLACED UNDER DEFAULT PACKAGE OF SRC FOLDER
- *
- * ALL THE CODING MUST BE DONE INSIDE THIS SINGLE .JAVA FILE ONLY DO NOT CREATE DEPENDENT CLASSES DO NOT MODIFY CODE
- * SKELETON DO NOT MODIFY: ACCESS SPECIFIERS, RETURN TYPES OR DATA TYPES, EXCEPTION CLAUSES, CLASS OR METHOD NAMES IN
- * THE SKELETON
- *
- *
- * YOU MUST CODE ON THE SAME PROJECT MAPPED IN EBOX VIEW THROUGHOUT THE ASSESSMENT CLICK ON 'Problem/Project Status'
- * BUTTON TO SEE THE PROJECT MAPPED IN EBOX
- *
- * YOU MUST CLICK ON 'SAVE PROJECT' BUTTON EVERY 10 MINUTES TO PERIODICALLY SAVE CTRL + S ALONE, WILL NOT BE SUFFICIENT
- * TO SAVE YOUR CODE IN EBOX CLICKING ON 'SAVE PROJECT' ENSURES NO LOSS OF CODE
- *
- * REACH OUT TO PROCTORS FOR ANY QUERIES
- *
- * Skeleton Version 2.0 Date Modified: 21-June-2016
- */
-/*************************************************************************************************/
-
-// imports here
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -43,16 +19,12 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
-/**
- * This class must be used to write the solution for the given requirement. No additional classes must be created
- *
- */
-public class PolicyReportManager {
+public class InsuranceManager {
 
-    public static final Pattern TYPE_ID_MODE_PATTERN = Pattern.compile("[A-Z]{2}/[A-Z]{1}[0-9]{4}-");
-    public static final String DATE_PATTERN_MM_DD_YYYY = "MMddyyyy";
-    public static final String DATE_PATTERN_MM_DD_YYYY_WITH_HYPHEN = "MM-dd-yyyy";
-    public static final Map<String, Integer> finePercentMap = new HashMap<String, Integer>();
+    private static final Pattern TYPE_ID_MODE_PATTERN = Pattern.compile("[A-Z]{2}/[A-Z]{1}[0-9]{4}-");
+    private static final String DATE_PATTERN_MM_DD_YYYY = "MMddyyyy";
+    private static final String DATE_PATTERN_MM_DD_YYYY_WITH_HYPHEN = "MM-dd-yyyy";
+    private static final Map<String, Integer> finePercentMap = new HashMap<String, Integer>();
 
     static {
         finePercentMap.put("Q", 1);
@@ -60,35 +32,23 @@ public class PolicyReportManager {
         finePercentMap.put("Y", 5);
     }
 
-    /**
-     * Do not change the method signature
-     *
-     * @param filePath
-     * @return Map
-     * @throws ABCInsuranceCorpException
-     */
-    public Map processPolicyDetails(final String filePath) throws ABCInsuranceCorpException {
+    @SuppressWarnings("rawtypes")
+    public Map processPolicyDetails(final String filePath) throws InsuranceException {
 
         final List<PolicyVO> policyDetails = getPolicyDetails(filePath);
         return getOutputMap(policyDetails);
     }
 
-    /**
-     * Do not change the method signature
-     *
-     * @param filePath
-     * @param policyType
-     * @return String[]
-     * @throws ABCInsuranceCorpException
-     */
-    public String[] getTopFiveCustomers(final String filePath, final String policyType) throws ABCInsuranceCorpException {
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public String[] getTopFiveCustomers(final String filePath, final String policyType) throws InsuranceException {
 
         final Map<String, Object> map = processPolicyDetails(filePath);
         final List<PolicyVO> detailsForType = new ArrayList<PolicyVO>();
-        detailsForType.addAll((Collection<? extends PolicyVO>) ((Map) map.get(policyType)).get("O"));
-        detailsForType.addAll((Collection<? extends PolicyVO>) ((Map) map.get(policyType)).get("D"));
+        final Map<String, Collection<? extends PolicyVO>> detailsMapForType = (Map) map.get(policyType);
+        detailsForType.addAll(detailsMapForType.get("O"));
+        detailsForType.addAll(detailsMapForType.get("D"));
 
-        if (!detailsForType.isEmpty()) {
+        if (detailsForType.isEmpty()) {
             System.out.println("No values");
             return new String[1];
         }
@@ -111,7 +71,7 @@ public class PolicyReportManager {
         return names;
     }
 
-    private List<PolicyVO> getPolicyDetails(final String fileLocation) throws ABCInsuranceCorpException {
+    private List<PolicyVO> getPolicyDetails(final String fileLocation) throws InsuranceException {
         final List<PolicyVO> policyDetails = new ArrayList<PolicyVO>();
 
         final List<String> fileContentLines = getFileContents(fileLocation);
@@ -173,7 +133,7 @@ public class PolicyReportManager {
         }
     }
 
-    private List<String> getFileContents(final String fileLocation) throws ABCInsuranceCorpException {
+    private List<String> getFileContents(final String fileLocation) throws InsuranceException {
         final List<String> fileContentLines = new ArrayList<String>();
         BufferedReader br = null;
         FileReader fr = null;
@@ -191,7 +151,7 @@ public class PolicyReportManager {
             System.out.println("Completed.");
 
         } catch (final IOException e) {
-            throw new ABCInsuranceCorpException("Exception during file read.", e);
+            throw new InsuranceException("Exception during file read.", e);
         } finally {
             try {
                 if (fr != null) {
@@ -201,14 +161,14 @@ public class PolicyReportManager {
                     br.close();
                 }
             } catch (final IOException e) {
-                throw new ABCInsuranceCorpException("Exception during file read.", e);
+                throw new InsuranceException("Exception during file read.", e);
             }
         }
 
         return fileContentLines;
     }
 
-    private PolicyVO getPolicyVO(final String[] details) throws ABCInsuranceCorpException {
+    private PolicyVO getPolicyVO(final String[] details) throws InsuranceException {
         validate(details);
 
         final PolicyVO vo = new PolicyVO();
@@ -219,7 +179,7 @@ public class PolicyReportManager {
             vo.setLastPremiumPaidDate(getDate(details[3], true));
             vo.setDueDate(getDate(details[4], true));
         } catch (final ParseException e) {
-            throw new ABCInsuranceCorpException("Invalid date.");
+            throw new InsuranceException("Invalid date.");
         }
         vo.setFine(calculateFine(vo));
 
@@ -234,12 +194,14 @@ public class PolicyReportManager {
         return 0;
     }
 
-    private void validate(final String[] details) throws ABCInsuranceCorpException {
+    private void validate(final String[] details) throws InsuranceException {
+        // Sample data row: HP/H5678-10102012,Test2,20000,09-22-2017,09-16-2017
+
         final String policyNumber = details[0];
         // alphanum part without date component (Eg: MB/Q1234-)
         final String alphaNumWithoutDate = policyNumber.substring(0, 9);
         if (!TYPE_ID_MODE_PATTERN.matcher(alphaNumWithoutDate).matches()) {
-            throw new ABCInsuranceCorpException("Alphanum part of ID is not in valid format");
+            throw new InsuranceException("Alphanum part of ID is not in valid format");
         }
 
         // policy start date component in the id (Eg: 12122012)
@@ -248,19 +210,19 @@ public class PolicyReportManager {
         try {
             policyStartDate = getDate(dateComponentInId, false);
         } catch (final ParseException e) {
-            throw new ABCInsuranceCorpException("Policy Start Date is not in valid format", e);
+            throw new InsuranceException("Policy Start Date is not in valid format", e);
         }
 
         // type validation
         final String type = policyNumber.substring(0, 2);
         if (!("MB".equals(type) || "HP".equals(type))) {
-            throw new ABCInsuranceCorpException("Type is not valid.");
+            throw new InsuranceException("Type is not valid.");
         }
 
         // mode validation
         final String mode = policyNumber.substring(3, 4);
         if (!("Q".equals(mode) || "H".equals(mode) || "Y".equals(mode))) {
-            throw new ABCInsuranceCorpException("Mode is not valid.");
+            throw new InsuranceException("Mode is not valid.");
         }
 
         // policy start date validation
@@ -268,10 +230,10 @@ public class PolicyReportManager {
         try {
             lastPremiumPaymentDate = getDate(details[3], true);
         } catch (final ParseException e) {
-            throw new ABCInsuranceCorpException("Last premium payment date is not in valid format", e);
+            throw new InsuranceException("Last premium payment date is not in valid format", e);
         }
         if (policyStartDate.after(lastPremiumPaymentDate)) {
-            throw new ABCInsuranceCorpException("Policy start date is after Last premium payment date.");
+            throw new InsuranceException("Policy start date is after Last premium payment date.");
         }
 
     }
@@ -280,9 +242,11 @@ public class PolicyReportManager {
         if (hasHyphen) {
             final SimpleDateFormat dateFormatForPatternWithHyphen =
                     new SimpleDateFormat(DATE_PATTERN_MM_DD_YYYY_WITH_HYPHEN);
+            dateFormatForPatternWithHyphen.setLenient(false);
             return dateFormatForPatternWithHyphen.parse(dateString);
         } else {
             final SimpleDateFormat dateFormatForPatternWithoutHyphen = new SimpleDateFormat(DATE_PATTERN_MM_DD_YYYY);
+            dateFormatForPatternWithoutHyphen.setLenient(false);
             return dateFormatForPatternWithoutHyphen.parse(dateString);
         }
     }
@@ -307,10 +271,6 @@ public class PolicyReportManager {
 
 }
 
-/**
- * VO class supplied part of the Skeleton. Do not modify this class
- *
- */
 class PolicyVO {
 
     private String policyNumber;
@@ -320,95 +280,54 @@ class PolicyVO {
     private float fine;
     private int sumAssurred;
 
-    /**
-     * @return the policyNumber
-     */
     public String getPolicyNumber() {
         return policyNumber;
     }
 
-    /**
-     * @param policyNumber the policyNumber to set
-     */
     public void setPolicyNumber(final String policyNumber) {
         this.policyNumber = policyNumber;
     }
 
-    /**
-     * @return the customerName
-     */
     public String getCustomerName() {
         return customerName;
     }
 
-    /**
-     * @param customerName the customerName to set
-     */
     public void setCustomerName(final String customerName) {
         this.customerName = customerName;
     }
 
-    /**
-     * @return the dueDate
-     */
     public Date getDueDate() {
         return dueDate;
     }
 
-    /**
-     * @param dueDate the dueDate to set
-     */
     public void setDueDate(final Date dueDate) {
         this.dueDate = dueDate;
     }
 
-    /**
-     * @return the lastPremiumPaidDate
-     */
     public Date getLastPremiumPaidDate() {
         return lastPremiumPaidDate;
     }
 
-    /**
-     * @param lastPremiumPaidDate the lastPremiumPaidDate to set
-     */
     public void setLastPremiumPaidDate(final Date lastPremiumPaidDate) {
         this.lastPremiumPaidDate = lastPremiumPaidDate;
     }
 
-    /**
-     * @return the fine
-     */
     public float getFine() {
         return fine;
     }
 
-    /**
-     * @param fine the fine to set
-     */
     public void setFine(final float fine) {
         this.fine = fine;
     }
 
-    /**
-     * @return the sumAssurred
-     */
     public int getSumAssurred() {
         return sumAssurred;
     }
 
-    /**
-     * @param sumAssurred the sumAssurred to set
-     */
     public void setSumAssurred(final int sumAssurred) {
         this.sumAssurred = sumAssurred;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString() {
         final StringBuilder builder = new StringBuilder();
@@ -428,13 +347,16 @@ class PolicyVO {
         return builder.toString();
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
     @Override
     public boolean equals(final Object obj) {
+        if (obj == null) {
+            return false;
+        }
+
+        if (this.getClass() != obj.getClass()) {
+            return false;
+        }
+
         boolean isEqual = false;
         final PolicyVO other = (PolicyVO) obj;
         if (this == obj) {
@@ -452,35 +374,19 @@ class PolicyVO {
     }
 }
 
-/**
- *
- * Exception class supplied part of the Skeleton. Do not modify this class
- *
- */
-
-class ABCInsuranceCorpException extends Exception {
+class InsuranceException extends Exception {
 
     private static final long serialVersionUID = 1L;
 
-    /**
-     * @param message
-     */
-    public ABCInsuranceCorpException(final String message) {
+    public InsuranceException(final String message) {
         super(message);
     }
 
-    /**
-     * @param throwable
-     */
-    public ABCInsuranceCorpException(final Throwable throwable) {
+    public InsuranceException(final Throwable throwable) {
         super(throwable);
     }
 
-    /**
-     * @param message
-     * @param throwable
-     */
-    public ABCInsuranceCorpException(final String message, final Throwable throwable) {
+    public InsuranceException(final String message, final Throwable throwable) {
         super(message, throwable);
     }
 }
